@@ -1,0 +1,5 @@
+.card-day{padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));border:1px solid rgba(0,0,0,0.04)}
+.card-day .meta{display:flex;justify-content:space-between;align-items:center}
+.card-day .meta .date{font-weight:700}
+.card-day .body{margin-top:8px;color:var(--muted)}
+.card-actions{margin-top:10px;display:flex;gap:8px}

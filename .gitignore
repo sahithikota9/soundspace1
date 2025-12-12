@@ -1,0 +1,25 @@
+# Node modules (do not upload)
+node_modules/
+
+# Backend data (private JSON files)
+backend/data/*.json
+
+# Per-user JSON folders (auto-generated)
+backend/data/practice/
+backend/data/notes/
+backend/data/errors/
+backend/data/private_libraries/
+
+# Public library files
+backend/public_library/
+
+# Environment variables (if added)
+.env
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Mac files
+.DS_Store

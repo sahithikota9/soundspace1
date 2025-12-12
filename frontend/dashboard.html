@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard — Music Progress Tracker</title>
+  <link href="css/style.css" rel="stylesheet">
+  <link href="css/calendar.css" rel="stylesheet">
+  <link href="css/cards.css" rel="stylesheet">
+</head>
+<body class="bg-pastel">
+  <div class="app-shell">
+    <aside class="sidebar glass">
+      <div class="brand-small"><h2>MPT</h2></div>
+      <nav id="navList">
+        <button data-tab="practice" class="nav-item">Practice</button>
+        <button data-tab="errors" class="nav-item">Errors</button>
+        <button data-tab="notes" class="nav-item">Notes</button>
+        <button data-tab="library" class="nav-item">Music Library</button>
+        <button data-tab="notifications" class="nav-item">Notifications</button>
+        <button data-tab="profile" class="nav-item">Profile</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="btn ghost">Log out</button>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar glass">
+        <div>
+          <h3 id="welcomeText">Welcome</h3>
+          <div id="roleText" class="muted"></div>
+        </div>
+      </header>
+
+      <section class="content">
+        <div id="tab-practice" class="tab-pane"></div>
+
+        <div id="tab-errors" class="tab-pane hidden">
+          <div class="row space-between">
+            <h3>Errors <button class="btn primary" id="addErrorBtn">+ Add</button></h3>
+          </div>
+          <div id="errorsContainer" class="cards-grid"></div>
+        </div>
+
+        <div id="tab-notes" class="tab-pane hidden">
+          <div class="row space-between">
+            <h3>Notes <button class="btn primary" id="addNoteBtn">+ Add</button></h3>
+          </div>
+          <div id="notesContainer" class="cards-grid"></div>
+        </div>
+
+        <div id="tab-library" class="tab-pane hidden">
+          <h4>Public Library</h4>
+          <div id="publicLibrary" class="file-list"></div>
+          <h4>Your Private Library</h4>
+          <div id="privateLibrary" class="file-list"></div>
+          <div id="libraryUploader" class="uploader"></div>
+        </div>
+
+        <div id="tab-notifications" class="tab-pane hidden">
+          <div id="notificationsList"></div>
+          <div id="notificationEditor" class="editor hidden"></div>
+        </div>
+
+        <div id="tab-profile" class="tab-pane hidden">
+          <div class="profile-grid">
+            <div class="profile-card glass">
+              <h4 id="profileName">User</h4>
+              <p id="profileRole">Role</p>
+            </div>
+            <div class="profile-card glass">
+              <p><strong>Username:</strong> <span id="profileUsername"></span></p>
+              <p><strong>Name:</strong> <span id="profileDisplayName"></span></p>
+              <input id="editDisplayName" placeholder="Edit name" />
+              <button id="saveNameBtn" class="btn primary">Save name</button>
+
+              <h4 style="margin-top:14px">Change Password</h4>
+              <input id="currentPassword" type="password" placeholder="Current password" />
+              <input id="newPassword" type="password" placeholder="New password (5 digits)" maxlength="5" />
+              <button id="changePassBtn" class="btn primary">Change password</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+<script src="js/dashboard.js"></script>
+<script src="js/practice.js"></script>
+<script src="js/errors.js"></script>
+<script src="js/notes.js"></script>
+<script src="js/library.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>
