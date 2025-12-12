@@ -2,34 +2,121 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Music Progress Tracker — Dashboard</title>
+  <title>MPT — Dashboard</title>
   <link href="css/style.css" rel="stylesheet">
+  <style>
+    body { display: flex; margin: 0; height: 100vh; background: #f4f4fe; }
+
+    /* Sidebar */
+    #sidebar {
+      width: 230px;
+      background: #3a3f58;
+      color: #fff;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    #sidebar h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    #sidebar button {
+      background: none;
+      border: none;
+      color: #fff;
+      text-align: left;
+      padding: 15px 25px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #sidebar button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* Content */
+    #content {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .active {
+      display: block;
+    }
+  </style>
 </head>
-<body class="bg-pastel">
-  <aside class="sidebar">
-    <h2>Music Progress Tracker</h2>
-    <p id="welcomeName">Welcome, User</p>
-    <p id="userRole">Role: </p>
-    <ul class="nav">
-      <li data-tab="practice" class="tab-btn">Practice</li>
-      <li data-tab="errors" class="tab-btn">Errors</li>
-      <li data-tab="notes" class="tab-btn">Notes</li>
-      <li data-tab="library" class="tab-btn">Library</li>
-      <li data-tab="notifications" class="tab-btn">Notifications</li>
-      <li data-tab="profile" class="tab-btn">Profile</li>
-    </ul>
-    <button id="logoutBtn" class="btn logout">Logout</button>
-  </aside>
+<body>
 
-  <main class="main-content">
-    <section id="practice" class="tab-content"></section>
-    <section id="errors" class="tab-content"></section>
-    <section id="notes" class="tab-content"></section>
-    <section id="library" class="tab-content"></section>
-    <section id="notifications" class="tab-content"></section>
-    <section id="profile" class="tab-content"></section>
-  </main>
+<div id="sidebar">
+  <h2 id="usernameLabel">User</h2>
+  <button onclick="openTab('home')">Home</button>
+  <button onclick="openTab('practice')">Practice Log</button>
+  <button onclick="openTab('notes')">Notes</button>
+  <button onclick="openTab('errors')">Errors</button>
+  <button onclick="openTab('privateLib')">Private Library</button>
+  <button onclick="openTab('publicLib')">Public Library</button>
+  <button onclick="openTab('notifications')">Notifications</button>
+  <button onclick="logout()">Logout</button>
+</div>
 
-  <script src="js/dashboard.js"></script>
+<div id="content">
+
+  <div id="home" class="section active">
+    <h1>Welcome!</h1>
+    <p>Your dashboard is ready.</p>
+  </div>
+
+  <div id="practice" class="section">
+    <h1>Practice Log</h1>
+    <textarea id="practiceInput" placeholder="Write practice notes..."></textarea>
+    <button onclick="savePractice()">Save</button>
+    <ul id="practiceList"></ul>
+  </div>
+
+  <div id="notes" class="section">
+    <h1>Notes</h1>
+    <textarea id="notesInput"></textarea>
+    <button onclick="saveNotes()">Save</button>
+  </div>
+
+  <div id="errors" class="section">
+    <h1>Errors</h1>
+    <textarea id="errorsInput"></textarea>
+    <button onclick="saveErrors()">Save</button>
+  </div>
+
+  <div id="privateLib" class="section">
+    <h1>Private Library</h1>
+    <input type="file" id="privateFile">
+    <button onclick="uploadPrivateFile()">Upload</button>
+    <ul id="privateList"></ul>
+  </div>
+
+  <div id="publicLib" class="section">
+    <h1>Public Library</h1>
+    <ul id="publicList"></ul>
+  </div>
+
+  <div id="notifications" class="section">
+    <h1>Notifications</h1>
+    <div id="teacherNotifTools" style="display:none;">
+      <textarea id="notifMsg" placeholder="Message"></textarea>
+      <input type="file" id="notifFile">
+      <button onclick="sendNotification()">Send</button>
+      <hr>
+    </div>
+    <ul id="notifList"></ul>
+  </div>
+
+</div>
+
+<script src="js/dashboard.js"></script>
+
 </body>
 </html>

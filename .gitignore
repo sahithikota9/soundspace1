@@ -1,20 +1,15 @@
 # Node modules
 node_modules/
 
-# Backend data (private JSON files)
+# Backend private data
 backend/data/*.json
-
-# Per-user JSON folders (auto-generated)
 backend/data/practice/
 backend/data/notes/
 backend/data/errors/
 backend/data/private_libraries/
 
-# Public library files
+# Public library files (optional)
 backend/public_library/
-
-# Temp uploads
-temp_uploads/
 
 # Environment variables
 .env
@@ -24,5 +19,5 @@ npm-debug.log
 yarn-debug.log
 yarn-error.log
 
-# Mac files
+# Mac system files
 .DS_Store

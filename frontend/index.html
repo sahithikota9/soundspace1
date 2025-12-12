@@ -1,35 +1,49 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Music Progress Tracker — Login</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MPT — Login</title>
   <link href="css/style.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-pastel">
+<body class="ui-pastel">
+
   <main class="center-screen">
     <div class="glass auth-card">
-      <h1>Music Progress Tracker</h1>
-      <p class="muted">Login with 5-digit username & password</p>
-      <form id="loginForm">
-        <label>Username</label>
-        <input id="username" maxlength="5" required />
-        <label>Password</label>
-        <input id="password" maxlength="5" type="password" required />
-        <div class="row space-between">
+      <h1 class="brand">Music Progress Tracker</h1>
+      <p class="muted">Login with your 5-digit username & password</p>
+
+      <form id="loginForm" class="login-form" autocomplete="off">
+        <label class="label">Username</label>
+        <input id="username" maxlength="5" inputmode="numeric" pattern="\d{5}" class="input" required />
+
+        <label class="label">Password</label>
+        <input id="password" maxlength="5" type="password" inputmode="numeric" pattern="\d{5}" class="input" required />
+
+        <div class="row row-between">
           <button class="btn primary" type="submit">Login</button>
         </div>
-        <p id="err" class="muted" style="color:#b33"></p>
+
+        <p id="err" class="muted error-text" role="status"></p>
       </form>
+
+      <p class="small muted">Students: usernames 10001–10050, pwd 30001–30050 • Teachers: 70001–70010, pwd 90001–90010</p>
     </div>
   </main>
 
 <script>
-const API = 'https://soundspace-5lgd.onrender.com'; // deployed backend URL
+const API = 'https://soundspace-5lgd.onrender.com';
 
-document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const errEl = document.getElementById('err');
+  errEl.textContent = '';
+
   const u = document.getElementById('username').value.trim();
   const p = document.getElementById('password').value.trim();
+  if (!u || !p) { errEl.textContent = 'Enter username and password'; return; }
+
   try {
     const res = await fetch(API + '/api/login', {
       method: 'POST',
@@ -38,18 +52,21 @@ document.getElementById('loginForm').addEventListener('submit', async (e)=>{
     });
     const data = await res.json();
     if (!res.ok) {
-      document.getElementById('err').innerText = data.error || 'Login failed';
+      errEl.textContent = data.error || 'Login failed';
       return;
     }
-    sessionStorage.setItem('mpt_token', data.token);
-    sessionStorage.setItem('mpt_username', data.username);
-    sessionStorage.setItem('mpt_role', data.role);
-    sessionStorage.setItem('mpt_name', data.name);
-    window.location.href = 'dashboard.html';
-  } catch(err) {
-    document.getElementById('err').innerText = 'Network error';
+    // Save session data
+    sessionStorage.setItem('mpt_token', data.token || '');
+    sessionStorage.setItem('mpt_username', data.username || u);
+    sessionStorage.setItem('mpt_role', data.role || 'student');
+    sessionStorage.setItem('mpt_name', data.name || ('User ' + u));
+    location.href = 'dashboard.html';
+  } catch (err) {
+    console.error(err);
+    errEl.textContent = 'Network error — try again';
   }
 });
 </script>
+
 </body>
 </html>
