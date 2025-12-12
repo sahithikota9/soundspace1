@@ -1,13 +1,18 @@
 {
-  "name": "music-progress-tracker-backend",
+  "name": "mpt-backend",
   "version": "1.0.0",
+  "description": "Music Progress Tracker Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "multer": "^1.4.5"
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
+    "uuid": "^9.0.0"
   }
 }
