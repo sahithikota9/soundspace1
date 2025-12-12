@@ -23,46 +23,25 @@
     </div>
   </main>
   <script>
-    const API = "https://soundspace-5lgd.onrender.com";
-
+    const API = (location.hostname === 'localhost') ? 'https://soundspace-5lgd.onrender.com' : location.origin;
     document.getElementById('loginForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
-
-      alert("Login button clicked!"); // debug: confirms button is working
-
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value.trim();
-
-      alert("Username: " + u + ", Password: " + p); // debug: check values
-
-      try {
-        const res = await fetch(API + '/api/login', {
-          method:'POST',
-          headers:{'content-type':'application/json'},
-          body: JSON.stringify({ username: u, password: p })
-        });
-
-        alert("Request sent!"); 
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          alert("Login failed: " + (data.error || 'Unknown error'));
-          return;
-        }
-        
-        sessionStorage.setItem('mpt_token', data.token);
-        sessionStorage.setItem('mpt_username', data.username);
-        sessionStorage.setItem('mpt_role', data.role);
-        sessionStorage.setItem('mpt_name', data.name);
-
-        alert("Login success! Redirecting...");
-        window.location.href = 'dashboard.html';
-
-      } catch(err) {
-        alert("Cannot connect to backend. Check URL. Error: " + err);
-        console.error(err);
+      const res = await fetch(API + '/api/login', {
+        method:'POST', headers:{'content-type':'application/json'},
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        document.getElementById('err').innerText = data.error || 'Login failed';
+        return;
       }
+      sessionStorage.setItem('mpt_token', data.token);
+      sessionStorage.setItem('mpt_username', data.username);
+      sessionStorage.setItem('mpt_role', data.role);
+      sessionStorage.setItem('mpt_name', data.name);
+      window.location.href = 'dashboard.html';
     });
   </script>
 </body>
