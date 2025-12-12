@@ -24,51 +24,39 @@
   </main>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// 🔥 FIXED: Hardcoded backend URL
+const API = "https://soundspace-5lgd.onrender.com";
 
-  // 🔥 Your backend URL (NO trailing slash)
-  const API = "https://soundspace-5lgd.onrender.com";
+document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value.trim();
 
-  document.getElementById('loginForm').addEventListener('submit', async (e)=>{
-    e.preventDefault();
+  try {
+    const res = await fetch(API + '/api/login', {
+      method: 'POST',
+      headers: {'content-type':'application/json'},
+      body: JSON.stringify({ username: u, password: p })
+    });
 
-    alert("Login button clicked"); // Debug 1
+    const data = await res.json();
 
-    const u = document.getElementById('username').value.trim();
-    const p = document.getElementById('password').value.trim();
-
-    alert("Username: " + u + ", Password: " + p); // Debug 2
-
-    try {
-      const res = await fetch(API + '/api/login', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ username: u, password: p })
-      });
-
-      alert("Request sent! Status: " + res.status); // Debug 3
-
-      const data = await res.json();
-      alert("Response received: " + JSON.stringify(data)); // Debug 4
-
-      if (!res.ok) {
-        document.getElementById('err').innerText = data.error || 'Login failed';
-        return;
-      }
-
-      // Store session info
-      sessionStorage.setItem('mpt_token', data.token);
-      sessionStorage.setItem('mpt_username', data.username);
-      sessionStorage.setItem('mpt_role', data.role);
-      sessionStorage.setItem('mpt_name', data.name);
-
-      alert("Login success! Redirecting…"); // Debug 5
-      window.location.href = 'dashboard.html';
-
-    } catch (err) {
-      alert("Cannot connect to backend. Error: " + err); // Debug 6
+    if (!res.ok) {
+      document.getElementById('err').innerText = data.error || 'Login failed';
+      return;
     }
-  });
+
+    // Store login data
+    sessionStorage.setItem('mpt_token', data.token);
+    sessionStorage.setItem('mpt_username', data.username);
+    sessionStorage.setItem('mpt_role', data.role);
+    sessionStorage.setItem('mpt_name', data.name);
+
+    window.location.href = 'dashboard.html';
+  } 
+  catch (err) {
+    document.getElementById('err').innerText = "Cannot reach server.";
+  }
 });
 </script>
 
