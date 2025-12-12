@@ -24,7 +24,6 @@
   </main>
 
 <script>
-// 🔥 FIXED: Hardcoded backend URL
 const API = "https://soundspace-5lgd.onrender.com";
 
 document.getElementById('loginForm').addEventListener('submit', async (e)=>{
@@ -46,7 +45,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e)=>{
       return;
     }
 
-    // Store login data
     sessionStorage.setItem('mpt_token', data.token);
     sessionStorage.setItem('mpt_username', data.username);
     sessionStorage.setItem('mpt_role', data.role);
