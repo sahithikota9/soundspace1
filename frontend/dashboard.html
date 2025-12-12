@@ -1,41 +1,35 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Music Progress Tracker — Dashboard</title>
   <link href="css/style.css" rel="stylesheet">
 </head>
 <body class="bg-pastel">
+  <aside class="sidebar">
+    <h2>Music Progress Tracker</h2>
+    <p id="welcomeName">Welcome, User</p>
+    <p id="userRole">Role: </p>
+    <ul class="nav">
+      <li data-tab="practice" class="tab-btn">Practice</li>
+      <li data-tab="errors" class="tab-btn">Errors</li>
+      <li data-tab="notes" class="tab-btn">Notes</li>
+      <li data-tab="library" class="tab-btn">Library</li>
+      <li data-tab="notifications" class="tab-btn">Notifications</li>
+      <li data-tab="profile" class="tab-btn">Profile</li>
+    </ul>
+    <button id="logoutBtn" class="btn logout">Logout</button>
+  </aside>
 
-  <header class="glass top-bar">
-    <div>
-      <h2>Music Progress Tracker</h2>
-    </div>
-    <div class="user-info">
-      <span id="userName">User</span> |
-      <span id="userRole">Role</span>
-      <button id="logoutBtn" class="btn secondary">Logout</button>
-    </div>
-  </header>
-
-  <main class="dashboard-main">
-    <nav class="tabs glass">
-      <button class="tab-btn" data-tab="practice">Practice</button>
-      <button class="tab-btn" data-tab="errors">Errors</button>
-      <button class="tab-btn" data-tab="notes">Notes</button>
-      <button class="tab-btn" data-tab="music-library">Music Library</button>
-      <button class="tab-btn" data-tab="notifications">Notifications</button>
-      <button class="tab-btn" data-tab="profile">Profile</button>
-    </nav>
-
-    <section id="tab-content" class="glass">
-      <p>Welcome, <span id="userName">User</span>!</p>
-      <p>Your role: <span id="userRole">Role</span></p>
-      <p>Select a tab to see content.</p>
-    </section>
+  <main class="main-content">
+    <section id="practice" class="tab-content"></section>
+    <section id="errors" class="tab-content"></section>
+    <section id="notes" class="tab-content"></section>
+    <section id="library" class="tab-content"></section>
+    <section id="notifications" class="tab-content"></section>
+    <section id="profile" class="tab-content"></section>
   </main>
 
   <script src="js/dashboard.js"></script>
-
 </body>
 </html>

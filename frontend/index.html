@@ -24,40 +24,32 @@
   </main>
 
 <script>
-const API = "https://soundspace-5lgd.onrender.com";
+const API = 'https://soundspace-5lgd.onrender.com'; // deployed backend URL
 
 document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const u = document.getElementById('username').value.trim();
   const p = document.getElementById('password').value.trim();
-
   try {
     const res = await fetch(API + '/api/login', {
       method: 'POST',
       headers: {'content-type':'application/json'},
       body: JSON.stringify({ username: u, password: p })
     });
-
     const data = await res.json();
-
     if (!res.ok) {
       document.getElementById('err').innerText = data.error || 'Login failed';
       return;
     }
-
-    // Store session info
     sessionStorage.setItem('mpt_token', data.token);
     sessionStorage.setItem('mpt_username', data.username);
     sessionStorage.setItem('mpt_role', data.role);
     sessionStorage.setItem('mpt_name', data.name);
-
     window.location.href = 'dashboard.html';
-  } 
-  catch (err) {
-    document.getElementById('err').innerText = "Cannot reach server.";
+  } catch(err) {
+    document.getElementById('err').innerText = 'Network error';
   }
 });
 </script>
-
 </body>
 </html>

@@ -1,37 +1,28 @@
-# =====================================
-# Node modules (backend + frontend)
-# =====================================
+# Node modules
 node_modules/
 
-# =====================================
-# Backend private data
-# (ALLOW users.json, ignore everything else)
-# =====================================
+# Backend data (private JSON files)
+backend/data/*.json
+
+# Per-user JSON folders (auto-generated)
 backend/data/practice/
 backend/data/notes/
 backend/data/errors/
 backend/data/private_libraries/
 
-# Ignore ALL JSON files EXCEPT users.json
-backend/data/*.json
-!backend/data/users.json
-
-# Public library files (allowed)
+# Public library files
 backend/public_library/
 
-# =====================================
+# Temp uploads
+temp_uploads/
+
 # Environment variables
-# =====================================
 .env
 
-# =====================================
 # Logs
-# =====================================
 npm-debug.log
 yarn-debug.log
 yarn-error.log
 
-# =====================================
-# System files
-# =====================================
+# Mac files
 .DS_Store

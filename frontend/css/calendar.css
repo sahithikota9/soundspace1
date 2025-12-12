@@ -1,6 +1,0 @@
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-.calendar .day{padding:12px;border-radius:10px;background:rgba(255,255,255,0.92);min-height:96px;border:1px solid rgba(0,0,0,0.04)}
-.calendar .day .date{font-weight:600;color:var(--muted);font-size:13px}
-.calendar .day .hours{margin-top:8px;font-size:14px}
-.calendar .day.clickable{cursor:pointer;transition:transform .12s}
-.calendar .day.clickable:hover{transform:translateY(-4px)}
