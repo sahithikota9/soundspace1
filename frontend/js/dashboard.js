@@ -1,45 +1,67 @@
-const API = (location.hostname === 'localhost') ? 'https://soundspace-5lgd.onrender.com' : location.origin;
-const token = sessionStorage.getItem('mpt_token');
-if (!token) location.href = 'index.html';
-const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type':'application/json' };
+// ================================
+// CONFIG — CONNECT TO BACKEND
+// ================================
+const API = "https://soundspace-5lgd.onrender.com";   // <-- YOUR backend URL (no slash)
+console.log("Dashboard using API:", API);
 
-async function loadMe(){
-  const r = await fetch(API + '/api/me', { headers });
-  if (!r.ok){ sessionStorage.clear(); location.href='index.html'; return; }
-  const me = await r.json();
-  document.getElementById('welcomeText').innerText = `Welcome, ${me.name}`;
-  document.getElementById('roleText').innerText = `Role: ${me.role.toUpperCase()}`;
-  document.getElementById('profileName').innerText = me.name;
-  document.getElementById('profileRole').innerText = me.role.toUpperCase();
-  document.getElementById('profileUsername').innerText = sessionStorage.getItem('mpt_username');
-  document.getElementById('profileDisplayName').innerText = me.name;
-  if (me.role === 'teacher'){
-    document.querySelector('[data-tab="practice"]').style.display='none';
-    document.querySelector('[data-tab="errors"]').style.display='none';
-    document.querySelector('[data-tab="notes"]').style.display='none';
-  }
+// ================================
+// AUTH CHECK
+// ================================
+const token = sessionStorage.getItem("mpt_token");
+const username = sessionStorage.getItem("mpt_username");
+const role = sessionStorage.getItem("mpt_role");
+const name = sessionStorage.getItem("mpt_name");
+
+// If any required data is missing → send back to login
+if (!token || !username || !role || !name) {
+    console.warn("Missing session data. Redirecting...");
+    window.location.href = "index.html";
 }
-loadMe();
 
-const navItems = document.querySelectorAll('.nav-item');
-const panes = document.querySelectorAll('.tab-pane');
-function hideAll(){ panes.forEach(p=>p.classList.add('hidden')); }
-function show(name){ hideAll(); document.getElementById('tab-'+name).classList.remove('hidden'); }
-navItems.forEach(btn=>{
-  btn.addEventListener('click', ()=> {
-    const t = btn.dataset.tab;
-    show(t);
-    if (t==='practice') loadPractice();
-    if (t==='errors') loadErrors();
-    if (t==='notes') loadNotes();
-    if (t==='library') loadLibrary();
-    if (t==='notifications') loadNotifications();
-    if (t==='profile') loadProfile();
-  });
-});
-if (sessionStorage.getItem('mpt_role')==='teacher') show('notifications'); else show('practice');
+// ================================
+// DISPLAY USER INFO
+// ================================
+document.addEventListener("DOMContentLoaded", () => {
+    const nameEl = document.getElementById("userName");
+    const roleEl = document.getElementById("userRole");
 
-document.getElementById('logoutBtn').addEventListener('click', ()=>{
-  sessionStorage.clear();
-  location.href='index.html';
+    if (nameEl) nameEl.textContent = name;
+    if (roleEl) roleEl.textContent = role.toUpperCase();
 });
+
+// ================================
+// VERIFY TOKEN WITH BACKEND
+// (Prevents invalid tokens from showing dashboard)
+// ================================
+async function verifyToken() {
+    try {
+        const res = await fetch(`${API}/api/verify`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            console.error("Token check failed.");
+            window.location.href = "index.html";
+            return;
+        }
+
+        console.log("Token OK.");
+    } 
+    catch (err) {
+        console.error("Could not connect to backend:", err);
+        alert("Unable to connect to the server. Try again later.");
+    }
+}
+
+verifyToken();
+
+// ================================
+// LOGOUT BUTTON
+// ================================
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+        sessionStorage.clear();
+        window.location.href = "index.html";
+    });
+}
