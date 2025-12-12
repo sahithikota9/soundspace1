@@ -45,6 +45,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e)=>{
       return;
     }
 
+    // Store session info
     sessionStorage.setItem('mpt_token', data.token);
     sessionStorage.setItem('mpt_username', data.username);
     sessionStorage.setItem('mpt_role', data.role);
