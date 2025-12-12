@@ -1,4 +1,4 @@
-const API = (location.hostname === 'localhost') ? 'http://localhost:8787' : location.origin;
+const API = (location.hostname === 'localhost') ? 'https://soundspace-5lgd.onrender.com/' : location.origin;
 const token = sessionStorage.getItem('mpt_token');
 if (!token) location.href = 'index.html';
 const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type':'application/json' };

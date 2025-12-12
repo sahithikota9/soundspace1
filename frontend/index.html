@@ -24,7 +24,7 @@
   </main>
 
 <script>
-const API = (location.hostname === 'localhost') ? 'http://localhost:8787' : location.origin;
+const API = (location.hostname === 'localhost') ? 'https://soundspace-5lgd.onrender.com/' : location.origin;
 document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const u = document.getElementById('username').value.trim();
