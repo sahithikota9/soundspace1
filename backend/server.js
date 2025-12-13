@@ -1,181 +1,96 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const multer = require('multer');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const cors = require("cors");
+const multer = require("multer");
 
 const app = express();
-const port = process.env.PORT || 8787;
+const PORT = process.env.PORT || 10000;
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
-// ----------------------------------
-// AUTH MIDDLEWARE
-// ----------------------------------
-const auth = (req, res, next) => {
-  const { username, token } = req.headers;
-  if (!username || !token) return res.status(401).json({ error: "Unauthorized" });
+const DATA_DIR = path.join(__dirname, "data");
+const USERS_FILE = path.join(DATA_DIR, "users.json");
 
-  const users = JSON.parse(fs.readFileSync('./data/users.json'));
-  if (!users[username] || users[username].token !== token) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+function readJSON(file, fallback) {
+  if (!fs.existsSync(file)) return fallback;
+  return JSON.parse(fs.readFileSync(file));
+}
 
-  req.username = username;
-  req.role = users[username].role;
-  req.name = users[username].name;
-  next();
-};
+function writeJSON(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
+}
 
-// ----------------------------------
-// MULTER SETUP
-// ----------------------------------
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let dir;
-    if (req.baseUrl.includes('private')) {
-      dir = `./data/private_libraries/${req.username}`;
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    } else if (req.baseUrl.includes('notifications')) {
-      dir = './data/notifications';
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    } else if (req.baseUrl.includes('public_library')) {
-      dir = './data/public_library';
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '_' + file.originalname);
-  }
-});
-const upload = multer({ storage });
-
-// ----------------------------------
-// LOGIN
-// ----------------------------------
-app.post('/api/login', (req, res) => {
+/* ---------------- LOGIN ---------------- */
+app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
-  const users = JSON.parse(fs.readFileSync('./data/users.json'));
+  const users = readJSON(USERS_FILE, {});
+  const user = users[username];
 
-  if (!users[username] || users[username].password !== password) {
-    return res.status(401).json({ error: "Invalid username or password" });
+  if (!user || user.password !== password) {
+    return res.status(401).json({ error: "Invalid login" });
   }
-
-  // simple token
-  const token = Date.now().toString();
-  users[username].token = token;
-  fs.writeFileSync('./data/users.json', JSON.stringify(users, null, 2));
 
   res.json({
-    token,
+    token: "ok",
     username,
-    role: users[username].role,
-    name: users[username].name
+    role: user.role,
+    name: user.name
   });
 });
 
-// ----------------------------------
-// PRACTICE
-// ----------------------------------
-app.post('/api/practice', auth, (req, res) => {
-  const dataPath = `./data/practice/${req.username}.json`;
-  fs.writeFileSync(dataPath, JSON.stringify(req.body, null, 2));
-  res.json({ ok: true });
-});
-app.get('/api/practice', auth, (req, res) => {
-  const dataPath = `./data/practice/${req.username}.json`;
-  const data = fs.existsSync(dataPath) ? JSON.parse(fs.readFileSync(dataPath)) : {};
-  res.json(data);
-});
+/* ---------------- PRACTICE / NOTES / ERRORS ---------------- */
+["practice", "notes", "errors"].forEach(type => {
+  app.post(`/api/${type}`, (req, res) => {
+    const { username, date, text } = req.body;
+    const file = path.join(DATA_DIR, type, `${username}.json`);
 
-// ----------------------------------
-// NOTES
-// ----------------------------------
-app.post('/api/notes', auth, (req, res) => {
-  const dataPath = `./data/notes/${req.username}.json`;
-  fs.writeFileSync(dataPath, JSON.stringify(req.body, null, 2));
-  res.json({ ok: true });
-});
-app.get('/api/notes', auth, (req, res) => {
-  const dataPath = `./data/notes/${req.username}.json`;
-  const data = fs.existsSync(dataPath) ? JSON.parse(fs.readFileSync(dataPath)) : {};
-  res.json(data);
+    let data = readJSON(file, {});
+    data[date] = text;
+    writeJSON(file, data);
+
+    res.json({ success: true });
+  });
+
+  app.get(`/api/${type}/:username`, (req, res) => {
+    const file = path.join(DATA_DIR, type, `${req.params.username}.json`);
+    res.json(readJSON(file, {}));
+  });
 });
 
-// ----------------------------------
-// ERRORS
-// ----------------------------------
-app.post('/api/errors', auth, (req, res) => {
-  const dataPath = `./data/errors/${req.username}.json`;
-  fs.writeFileSync(dataPath, JSON.stringify(req.body, null, 2));
-  res.json({ ok: true });
-});
-app.get('/api/errors', auth, (req, res) => {
-  const dataPath = `./data/errors/${req.username}.json`;
-  const data = fs.existsSync(dataPath) ? JSON.parse(fs.readFileSync(dataPath)) : {};
-  res.json(data);
+/* ---------------- NOTIFICATIONS ---------------- */
+const notificationsFile = path.join(DATA_DIR, "notifications.json");
+
+app.get("/api/notifications", (req, res) => {
+  res.json(readJSON(notificationsFile, []));
 });
 
-// ----------------------------------
-// PRIVATE LIBRARY
-// ----------------------------------
-app.post('/api/private_library', auth, upload.single('file'), (req, res) => {
-  res.json({ ok: true, file: req.file.filename });
-});
-app.get('/api/private_library', auth, (req, res) => {
-  const dir = `./data/private_libraries/${req.username}`;
-  const files = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
-  res.json(files);
+app.post("/api/notifications", (req, res) => {
+  const { message } = req.body;
+  const list = readJSON(notificationsFile, []);
+  list.unshift({ message, time: Date.now() });
+  writeJSON(notificationsFile, list);
+  res.json({ success: true });
 });
 
-// ----------------------------------
-// PUBLIC LIBRARY
-// ----------------------------------
-app.get('/api/public_library', auth, (req, res) => {
-  const dir = './data/public_library';
-  const files = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
-  res.json(files);
-});
-app.post('/api/public_library', auth, upload.single('file'), (req, res) => {
-  if (req.role !== 'teacher') return res.status(403).json({ error: "Forbidden" });
-  res.json({ ok: true, file: req.file.filename });
+/* ---------------- PUBLIC LIBRARY ---------------- */
+const publicDir = path.join(DATA_DIR, "public_library");
+fs.mkdirSync(publicDir, { recursive: true });
+
+const upload = multer({ dest: publicDir });
+
+app.post("/api/public-library", upload.single("file"), (req, res) => {
+  res.json({ success: true });
 });
 
-// ----------------------------------
-// NOTIFICATIONS
-// ----------------------------------
-if (!fs.existsSync('./data/notifications.json')) fs.writeFileSync('./data/notifications.json', '[]');
-let notifications = JSON.parse(fs.readFileSync('./data/notifications.json'));
-
-app.post('/api/notifications', auth, upload.single('file'), (req, res) => {
-  if (req.role !== 'teacher') return res.status(403).json({ error: "Forbidden" });
-
-  const message = req.body.message || '';
-  const now = Date.now();
-  let notif = { id: now.toString(), message, timestamp: now, file: null };
-
-  if (req.file) notif.file = `/data/notifications/${req.file.filename}`;
-
-  notifications.unshift(notif);
-  fs.writeFileSync('./data/notifications.json', JSON.stringify(notifications, null, 2));
-  res.json({ ok: true });
+app.get("/api/public-library", (req, res) => {
+  res.json(fs.readdirSync(publicDir));
 });
 
-app.get('/api/notifications', auth, (req, res) => {
-  res.json(notifications);
-});
+app.use("/public_library", express.static(publicDir));
 
-// ----------------------------------
-// SERVE UPLOADED FILES
-// ----------------------------------
-app.use('/data', express.static(path.join(__dirname, 'data')));
-
-// ----------------------------------
-// START SERVER
-// ----------------------------------
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+/* ---------------- START ---------------- */
+app.listen(PORT, () => {
+  console.log("Server running on", PORT);
 });
