@@ -1,102 +1,132 @@
+// server.js
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = process.env.PORT || 8787;
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Paths
 const DATA_DIR = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
+const PUBLIC_LIBRARY_DIR = path.join(DATA_DIR, 'public_library');
+const PRIVATE_LIBRARIES_DIR = path.join(DATA_DIR, 'private_libraries');
 const PRACTICE_DIR = path.join(DATA_DIR, 'practice');
 const ERRORS_DIR = path.join(DATA_DIR, 'errors');
 const NOTES_DIR = path.join(DATA_DIR, 'notes');
-const PRIVATE_LIB_DIR = path.join(DATA_DIR, 'private_libraries');
-const PUBLIC_LIB_DIR = path.join(DATA_DIR, 'public_library');
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Helpers
+// Helper to read JSON safely
 function readJSON(filePath) {
-    if (!fs.existsSync(filePath)) return {};
-    return JSON.parse(fs.readFileSync(filePath));
+  if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, '{}');
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+// Helper to write JSON
 function writeJSON(filePath, data) {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-// Login
+// =================== LOGIN ===================
 app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-    const users = readJSON(USERS_FILE);
+  const { username, password } = req.body;
+  let users = readJSON(USERS_FILE);
 
-    if (!users[username] || users[username].password !== password) {
-        return res.status(401).json({ error: 'Invalid username or password' });
-    }
+  if (!users[username] || users[username].password !== password) {
+    return res.status(400).json({ error: "Invalid username or password" });
+  }
 
-    res.json({
-        username: users[username].username,
-        role: users[username].role,
-        name: users[username].name,
-        token: 'demo-token'
-    });
+  const user = users[username];
+  const token = Math.random().toString(36).substring(2, 15); // dummy token
+  res.json({ token, username: user.username, role: user.role, name: user.name });
 });
 
-// Get notifications
+// =================== NOTIFICATIONS ===================
 app.get('/api/notifications', (req, res) => {
-    const notifications = readJSON(NOTIFICATIONS_FILE) || [];
-    res.json(notifications);
+  const notifications = readJSON(NOTIFICATIONS_FILE);
+  res.json(notifications);
 });
 
-// Save notification (teacher only)
 app.post('/api/notifications', (req, res) => {
-    const { username, role, message } = req.body;
-    if (role !== 'teacher') return res.status(403).json({ error: 'Unauthorized' });
-
-    let notifications = readJSON(NOTIFICATIONS_FILE) || [];
-    notifications.push({ from: username, message, date: new Date().toISOString() });
-    writeJSON(NOTIFICATIONS_FILE, notifications);
-    res.json({ success: true });
+  const { username, message } = req.body;
+  let notifications = readJSON(NOTIFICATIONS_FILE);
+  const timestamp = Date.now();
+  notifications[timestamp] = { username, message };
+  writeJSON(NOTIFICATIONS_FILE, notifications);
+  res.json({ success: true });
 });
 
-// Serve static files for libraries
-app.use('/public_library', express.static(PUBLIC_LIB_DIR));
-app.use('/private_library/:username', express.static(path.join(PRIVATE_LIB_DIR)));
+// =================== PRACTICE / ERRORS / NOTES ===================
+app.get('/api/:type/:username', (req, res) => {
+  const { type, username } = req.params;
+  const dirMap = { practice: PRACTICE_DIR, errors: ERRORS_DIR, notes: NOTES_DIR };
+  if (!dirMap[type]) return res.status(400).json({ error: 'Invalid type' });
 
-// Save practice/errors/notes
-app.post('/api/save/:type/:username', (req, res) => {
-    const { type, username } = req.params;
-    const { data } = req.body;
-    let dir;
-    if (type === 'practice') dir = PRACTICE_DIR;
-    else if (type === 'errors') dir = ERRORS_DIR;
-    else if (type === 'notes') dir = NOTES_DIR;
-    else return res.status(400).json({ error: 'Invalid type' });
-
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-    const filePath = path.join(dir, `${username}.json`);
-    writeJSON(filePath, data);
-    res.json({ success: true });
+  const filePath = path.join(dirMap[type], `${username}.json`);
+  const data = readJSON(filePath);
+  res.json(data);
 });
 
-// Load practice/errors/notes
-app.get('/api/load/:type/:username', (req, res) => {
-    const { type, username } = req.params;
-    let dir;
-    if (type === 'practice') dir = PRACTICE_DIR;
-    else if (type === 'errors') dir = ERRORS_DIR;
-    else if (type === 'notes') dir = NOTES_DIR;
-    else return res.status(400).json({ error: 'Invalid type' });
+app.post('/api/:type/:username', (req, res) => {
+  const { type, username } = req.params;
+  const { day, value } = req.body;
+  const dirMap = { practice: PRACTICE_DIR, errors: ERRORS_DIR, notes: NOTES_DIR };
+  if (!dirMap[type]) return res.status(400).json({ error: 'Invalid type' });
 
-    const filePath = path.join(dir, `${username}.json`);
-    const data = readJSON(filePath);
-    res.json(data);
+  const filePath = path.join(dirMap[type], `${username}.json`);
+  const data = readJSON(filePath);
+  data[day] = value;
+  writeJSON(filePath, data);
+  res.json({ success: true });
 });
 
+// =================== PRIVATE LIBRARY ===================
+const privateStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const username = req.params.username;
+    const userDir = path.join(PRIVATE_LIBRARIES_DIR, username);
+    if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
+    cb(null, userDir);
+  },
+  filename: (req, file, cb) => cb(null, file.originalname)
+});
+const privateUpload = multer({ storage: privateStorage });
+
+app.get('/api/private/:username', (req, res) => {
+  const username = req.params.username;
+  const userDir = path.join(PRIVATE_LIBRARIES_DIR, username);
+  if (!fs.existsSync(userDir)) return res.json([]);
+  const files = fs.readdirSync(userDir);
+  res.json(files);
+});
+
+app.post('/api/private/:username', privateUpload.single('file'), (req, res) => {
+  res.json({ success: true, file: req.file.originalname });
+});
+
+// =================== PUBLIC LIBRARY ===================
+const publicStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (!fs.existsSync(PUBLIC_LIBRARY_DIR)) fs.mkdirSync(PUBLIC_LIBRARY_DIR, { recursive: true });
+    cb(null, PUBLIC_LIBRARY_DIR);
+  },
+  filename: (req, file, cb) => cb(null, file.originalname)
+});
+const publicUpload = multer({ storage: publicStorage });
+
+app.get('/api/public', (req, res) => {
+  if (!fs.existsSync(PUBLIC_LIBRARY_DIR)) return res.json([]);
+  const files = fs.readdirSync(PUBLIC_LIBRARY_DIR);
+  res.json(files);
+});
+
+app.post('/api/public', publicUpload.single('file'), (req, res) => {
+  res.json({ success: true, file: req.file.originalname });
+});
+
+// =================== START SERVER ===================
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

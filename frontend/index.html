@@ -9,7 +9,7 @@
   <main class="center-screen">
     <div class="glass auth-card">
       <h1>Music Progress Tracker</h1>
-      <p class="muted">Login with 5-digit username & password</p>
+      <p class="muted">Login with your 5-digit username & password</p>
       <form id="loginForm">
         <label>Username</label>
         <input id="username" maxlength="5" required />
@@ -23,41 +23,34 @@
     </div>
   </main>
 
-  <script>
-    const API = "https://soundspace-5lgd.onrender.com"; // <-- Replace with your backend URL
-
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      try {
-        const res = await fetch(`${API}/api/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          document.getElementById('err').innerText = data.error || 'Invalid username or password';
-          return;
-        }
-
-        // Store session info
-        sessionStorage.setItem('mpt_token', data.token);
-        sessionStorage.setItem('mpt_username', data.username);
-        sessionStorage.setItem('mpt_role', data.role);
-        sessionStorage.setItem('mpt_name', data.name);
-
-        // Redirect to dashboard
-        window.location.href = 'dashboard.html';
-      } catch (err) {
-        console.error(err);
-        document.getElementById('err').innerText = 'Server error. Try again later.';
-      }
+<script>
+const API = "https://soundspace-5lgd.onrender.com"; // backend URL
+document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value.trim();
+  try {
+    const res = await fetch(API + '/api/login', {
+      method: 'POST',
+      headers: {'content-type':'application/json'},
+      body: JSON.stringify({ username: u, password: p })
     });
-  </script>
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById('err').innerText = data.error || 'Login failed';
+      return;
+    }
+    // store token + user
+    sessionStorage.setItem('mpt_token', data.token);
+    sessionStorage.setItem('mpt_username', data.username);
+    sessionStorage.setItem('mpt_role', data.role);
+    sessionStorage.setItem('mpt_name', data.name);
+    window.location.href = 'dashboard.html';
+  } catch(err) {
+    document.getElementById('err').innerText = 'Server error. Try again later.';
+    console.error(err);
+  }
+});
+</script>
 </body>
 </html>

@@ -2,80 +2,75 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>MPT — Dashboard</title>
+  <title>Music Progress Tracker — Dashboard</title>
   <link href="css/style.css" rel="stylesheet">
 </head>
 <body class="bg-pastel">
-  <div class="dashboard-container">
-    <aside class="sidebar">
-      <h2 id="welcomeMsg">Welcome!</h2>
-      <ul class="nav">
-        <li data-tab="practice">Practice</li>
-        <li data-tab="errors">Errors</li>
-        <li data-tab="notes">Notes</li>
-        <li data-tab="library">Music Library</li>
-        <li data-tab="notifications">Notifications</li>
-        <li data-tab="profile">Profile</li>
-      </ul>
-      <button id="logoutBtn" class="btn secondary">Logout</button>
-    </aside>
-    <main class="main-content">
-      <div id="practice" class="tab-content">Practice tab content...</div>
-      <div id="errors" class="tab-content">Errors tab content...</div>
-      <div id="notes" class="tab-content">Notes tab content...</div>
-      <div id="library" class="tab-content">Library tab content...</div>
-      <div id="notifications" class="tab-content">Notifications tab content...</div>
-      <div id="profile" class="tab-content">Profile tab content...</div>
-    </main>
-  </div>
+  <aside class="sidebar glass">
+    <h2>Welcome, <span id="usernameDisplay"></span></h2>
+    <p>Role: <span id="roleDisplay"></span></p>
+    <ul id="menu">
+      <!-- Menu items will populate via JS -->
+    </ul>
+    <button id="logoutBtn" class="btn secondary">Logout</button>
+  </aside>
+
+  <main class="dashboard-content glass">
+    <div id="tabContent">Select a tab</div>
+  </main>
 
 <script>
-  // Redirect to login if not logged in
-  const username = sessionStorage.getItem('mpt_username');
-  const role = sessionStorage.getItem('mpt_role');
-  const name = sessionStorage.getItem('mpt_name');
+const API = "https://soundspace-5lgd.onrender.com"; // backend URL
 
-  if (!username || !role) {
-    window.location.href = 'index.html';
-  } else {
-    document.getElementById('welcomeMsg').innerText = `Welcome, ${name}`;
+const username = sessionStorage.getItem('mpt_username');
+const role = sessionStorage.getItem('mpt_role');
+const name = sessionStorage.getItem('mpt_name');
+
+if (!username) window.location.href = 'index.html';
+
+document.getElementById('usernameDisplay').innerText = name;
+document.getElementById('roleDisplay').innerText = role;
+
+const menu = document.getElementById('menu');
+let tabs = [];
+if (role === 'student') {
+  tabs = ['Practice','Errors','Notes','Music Library','Notifications','Profile'];
+} else if (role === 'teacher') {
+  tabs = ['Notifications','Music Library','Profile'];
+}
+
+tabs.forEach(tab => {
+  const li = document.createElement('li');
+  li.innerText = tab;
+  li.addEventListener('click', ()=>loadTab(tab));
+  menu.appendChild(li);
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  sessionStorage.clear();
+  location.href='index.html';
+});
+
+// Tab content loader
+async function loadTab(tab){
+  const content = document.getElementById('tabContent');
+  content.innerHTML = `<h3>${tab}</h3><p>Loading...</p>`;
+  // Add your fetch logic for each tab here (practice, errors, notes, libraries, notifications)
+  // Example for Notifications:
+  if(tab==='Notifications'){
+    const res = await fetch(API+'/api/notifications');
+    const data = await res.json();
+    content.innerHTML = '';
+    for(const key in data){
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerText = `[${new Date(parseInt(key)).toLocaleDateString()}] ${data[key].username}: ${data[key].message}`;
+      content.appendChild(div);
+    }
   }
-
-  // Logout
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    sessionStorage.clear();
-    window.location.href = 'index.html';
-  });
-
-  // Tab switching
-  const tabs = document.querySelectorAll('.sidebar .nav li');
-  const contents = document.querySelectorAll('.tab-content');
-
-  function hideAll() {
-    contents.forEach(c => c.style.display = 'none');
-  }
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      hideAll();
-      const target = tab.getAttribute('data-tab');
-      document.getElementById(target).style.display = 'block';
-    });
-  });
-
-  // Show default tab based on role
-  if (role === 'teacher') {
-    hideAll();
-    document.getElementById('notifications').style.display = 'block';
-    // Hide student-only tabs
-    ['practice','errors','notes'].forEach(id => {
-      const el = document.querySelector(`[data-tab="${id}"]`);
-      if (el) el.style.display = 'none';
-    });
-  } else {
-    hideAll();
-    document.getElementById('practice').style.display = 'block';
-  }
+  // Similarly implement Practice, Errors, Notes, Music Library, Profile
+}
 </script>
 </body>
 </html>
