@@ -1,55 +1,61 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>Music Progress Tracker — Login</title>
+  <meta charset="utf-8">
+  <title>MPT — Login</title>
   <link href="css/style.css" rel="stylesheet">
 </head>
-<body class="bg-pastel">
-  <main class="center-screen">
-    <div class="glass auth-card">
-      <h1>Music Progress Tracker</h1>
-      <p class="muted">Login with 5-digit username & password</p>
-      <form id="loginForm">
-        <label>Username</label>
-        <input id="username" maxlength="5" required />
-        <label>Password</label>
-        <input id="password" maxlength="5" type="password" required />
-        <div class="row space-between">
-          <button class="btn primary" type="submit">Login</button>
-        </div>
-        <p id="err" class="muted" style="color:#b33"></p>
-      </form>
-    </div>
-  </main>
+<body>
+  <h2>LOGIN TEST</h2>
+
+  <form id="loginForm">
+    <input id="username" placeholder="username" required />
+    <input id="password" placeholder="password" type="password" required />
+    <button type="submit">Login</button>
+  </form>
+
+  <p id="err" style="color:red"></p>
 
 <script>
-const API = 'https://your-backend-service.onrender.com'; // Replace with your backend URL
+console.log("✅ JS LOADED");
 
-document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+const API = "https://soundspace-5lgd.onrender.com";
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const u = document.getElementById('username').value.trim();
-  const p = document.getElementById('password').value.trim();
+  console.log("✅ FORM SUBMITTED");
 
-  const res = await fetch(API + '/api/login', {
-    method: 'POST',
-    headers: {'content-type':'application/json'},
-    body: JSON.stringify({ username: u, password: p })
-  });
+  const u = username.value.trim();
+  const p = password.value.trim();
 
-  const data = await res.json();
+  console.log("📤 Sending:", u, p);
 
-  if (!res.ok) {
-    document.getElementById('err').innerText = data.error || 'Login failed';
-    return;
+  try {
+    const res = await fetch(API + "/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: u, password: p })
+    });
+
+    console.log("📥 Status:", res.status);
+
+    const text = await res.text();
+    console.log("📥 Raw response:", text);
+
+    const data = JSON.parse(text);
+
+    if (!res.ok) {
+      err.innerText = data.error || "Login failed";
+      return;
+    }
+
+    sessionStorage.setItem("mpt_token", data.token);
+    location.href = "dashboard.html";
+
+  } catch (e) {
+    console.error("❌ FETCH ERROR", e);
+    err.innerText = "Backend not reachable";
   }
-
-  sessionStorage.setItem('mpt_token', data.token);
-  sessionStorage.setItem('mpt_username', data.username);
-  sessionStorage.setItem('mpt_role', data.role);
-  sessionStorage.setItem('mpt_name', data.name);
-
-  window.location.href = 'dashboard.html';
 });
 </script>
 </body>
