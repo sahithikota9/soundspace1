@@ -1,122 +1,89 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>MPT — Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Music Progress Tracker — Dashboard</title>
   <link href="css/style.css" rel="stylesheet">
   <style>
-    body { display: flex; margin: 0; height: 100vh; background: #f4f4fe; }
-
-    /* Sidebar */
-    #sidebar {
-      width: 230px;
-      background: #3a3f58;
-      color: #fff;
-      padding: 20px 0;
-      display: flex;
-      flex-direction: column;
+    body { font-family: 'Segoe UI', sans-serif; margin:0; background: #f2f2f2; }
+    .container { display: flex; height: 100vh; }
+    .sidebar {
+      width: 220px; background: #222; color: #fff; display: flex; flex-direction: column;
+      padding-top: 20px;
     }
-    #sidebar h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      font-weight: 600;
+    .tab-btn {
+      padding: 15px 20px; border: none; background: none; color: #fff; text-align: left;
+      cursor: pointer; outline: none; font-size: 16px;
     }
-    #sidebar button {
-      background: none;
-      border: none;
-      color: #fff;
-      text-align: left;
-      padding: 15px 25px;
-      width: 100%;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    #sidebar button:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    /* Content */
-    #content {
-      flex: 1;
-      padding: 30px;
-      overflow-y: auto;
-    }
-
-    .section {
-      display: none;
-    }
-
-    .active {
-      display: block;
-    }
+    .tab-btn.active { background: #444; }
+    .tab-content { flex: 1; padding: 20px; display: none; overflow-y: auto; }
+    h2 { margin-top: 0; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .calendar-cell { background: #fff; padding: 10px; border-radius: 5px; text-align: center; }
+    .card { background: #fff; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+    button { cursor: pointer; }
   </style>
 </head>
 <body>
-
-<div id="sidebar">
-  <h2 id="usernameLabel">User</h2>
-  <button onclick="openTab('home')">Home</button>
-  <button onclick="openTab('practice')">Practice Log</button>
-  <button onclick="openTab('notes')">Notes</button>
-  <button onclick="openTab('errors')">Errors</button>
-  <button onclick="openTab('privateLib')">Private Library</button>
-  <button onclick="openTab('publicLib')">Public Library</button>
-  <button onclick="openTab('notifications')">Notifications</button>
-  <button onclick="logout()">Logout</button>
-</div>
-
-<div id="content">
-
-  <div id="home" class="section active">
-    <h1>Welcome!</h1>
-    <p>Your dashboard is ready.</p>
+<div class="container">
+  <div class="sidebar">
+    <button class="tab-btn" data-tab="practice">Practice</button>
+    <button class="tab-btn" data-tab="errors">Errors</button>
+    <button class="tab-btn" data-tab="notes">Notes</button>
+    <button class="tab-btn" data-tab="library">Music Library</button>
+    <button class="tab-btn" data-tab="notifications">Notifications</button>
+    <button class="tab-btn" data-tab="profile">Profile</button>
   </div>
 
-  <div id="practice" class="section">
-    <h1>Practice Log</h1>
-    <textarea id="practiceInput" placeholder="Write practice notes..."></textarea>
-    <button onclick="savePractice()">Save</button>
-    <ul id="practiceList"></ul>
+  <!-- STUDENT & TEACHER CONTENT -->
+  <div class="tab-content" id="practice">
+    <h2>Practice</h2>
+    <div id="practiceCalendar" class="calendar-grid"></div>
   </div>
 
-  <div id="notes" class="section">
-    <h1>Notes</h1>
-    <textarea id="notesInput"></textarea>
-    <button onclick="saveNotes()">Save</button>
+  <div class="tab-content" id="errors">
+    <h2>Errors</h2>
+    <div id="errorsContainer"></div>
+    <button id="addErrorBtn">Add Error</button>
   </div>
 
-  <div id="errors" class="section">
-    <h1>Errors</h1>
-    <textarea id="errorsInput"></textarea>
-    <button onclick="saveErrors()">Save</button>
+  <div class="tab-content" id="notes">
+    <h2>Notes</h2>
+    <div id="notesContainer"></div>
+    <button id="addNoteBtn">Add Note</button>
   </div>
 
-  <div id="privateLib" class="section">
-    <h1>Private Library</h1>
-    <input type="file" id="privateFile">
-    <button onclick="uploadPrivateFile()">Upload</button>
-    <ul id="privateList"></ul>
-  </div>
-
-  <div id="publicLib" class="section">
-    <h1>Public Library</h1>
-    <ul id="publicList"></ul>
-  </div>
-
-  <div id="notifications" class="section">
-    <h1>Notifications</h1>
-    <div id="teacherNotifTools" style="display:none;">
-      <textarea id="notifMsg" placeholder="Message"></textarea>
-      <input type="file" id="notifFile">
-      <button onclick="sendNotification()">Send</button>
-      <hr>
+  <div class="tab-content" id="library">
+    <h2>Music Library</h2>
+    <div id="publicLibrary">
+      <h3>Public Library</h3>
+      <div id="publicFiles"></div>
+      <button id="uploadPublicBtn" style="display:none;">Upload File (Teacher)</button>
     </div>
-    <ul id="notifList"></ul>
+    <div id="privateLibrary">
+      <h3>Private Library</h3>
+      <div id="privateFiles"></div>
+      <button id="uploadPrivateBtn">Upload File</button>
+    </div>
   </div>
 
+  <div class="tab-content" id="notifications">
+    <h2>Notifications</h2>
+    <div id="notificationList"></div>
+    <button id="addNotificationBtn" style="display:none;">Add Notification (Teacher)</button>
+  </div>
+
+  <div class="tab-content" id="profile">
+    <h2>Profile</h2>
+    <p id="roleDisplay"></p>
+    <label>Change Password:</label>
+    <input type="password" id="newPassword" maxlength="5">
+    <button id="changePasswordBtn">Change Password</button>
+    <br><br>
+    <button id="logoutBtn">Logout</button>
+  </div>
 </div>
 
 <script src="js/dashboard.js"></script>
-
 </body>
 </html>
