@@ -1,46 +1,62 @@
-const API = "https://soundspace-5lgd.onrender.com"; // replace with your deployed backend
-const username = sessionStorage.getItem('mpt_username');
-const role = sessionStorage.getItem('mpt_role');
-const name = sessionStorage.getItem('mpt_name');
+const API = "https://soundspace-5lgd.onrender.com";
 
-document.getElementById('welcomeName').innerText = `Welcome, ${name} (${role})`;
+/* ===== SESSION CHECK ===== */
+const username = sessionStorage.getItem("mpt_username");
+const role = sessionStorage.getItem("mpt_role");
+const name = sessionStorage.getItem("mpt_name");
 
-// Load tab content
+if (!username || !role) {
+  window.location.href = "index.html";
+}
+
+/* ===== UI ===== */
+document.getElementById("welcome").innerText =
+  `Welcome, ${name} (${role})`;
+
+/* ===== TAB HANDLER ===== */
 async function loadTab(tab) {
-  const content = document.getElementById('tabContent');
-  content.innerHTML = 'Loading...';
+  const content = document.getElementById("content");
+  content.innerHTML = "<p>Loading…</p>";
+
   try {
-    let data;
-    if (['practice','errors','notes'].includes(tab)) {
-      const res = await fetch(`${API}/${tab}/${username}`);
-      data = await res.json();
-    } else if (tab === 'private') {
-      const res = await fetch(`${API}/private/${username}`);
-      data = await res.json();
-    } else if (tab === 'public') {
-      const res = await fetch(`${API}/public`);
-      data = await res.json();
-    } else if (tab === 'notifications') {
-      const res = await fetch(`${API}/notifications`);
-      data = await res.json();
-    }
-    content.innerHTML = JSON.stringify(data, null, 2); // replace with UI cards later
-  } catch(e) {
-    content.innerHTML = 'Error loading tab';
-    console.error(e);
+    let url = "";
+
+    if (tab === "practice") url = `${API}/api/practice/${username}`;
+    if (tab === "errors") url = `${API}/api/errors/${username}`;
+    if (tab === "notes") url = `${API}/api/notes/${username}`;
+    if (tab === "notifications") url = `${API}/api/notifications`;
+    if (tab === "library") url =
+      role === "teacher"
+        ? `${API}/api/public-library`
+        : `${API}/api/private-library/${username}`;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Fetch failed");
+
+    const data = await res.json();
+
+    content.innerHTML =
+      `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+  } catch (err) {
+    console.error(err);
+    content.innerHTML =
+      "<p style='color:red'>Error loading tab</p>";
   }
 }
 
-// Sidebar tab clicks
-document.querySelectorAll('.sidebar-tab').forEach(el => {
-  el.addEventListener('click', () => loadTab(el.dataset.tab));
+/* ===== SIDEBAR BUTTONS ===== */
+document.querySelectorAll("[data-tab]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    loadTab(btn.dataset.tab);
+  });
 });
 
-// Load default tab
-loadTab(role === 'teacher' ? 'notifications' : 'practice');
+/* ===== DEFAULT TAB ===== */
+loadTab(role === "teacher" ? "notifications" : "practice");
 
-// Logout
-document.getElementById('logoutBtn').addEventListener('click', () => {
+/* ===== LOGOUT ===== */
+document.getElementById("logoutBtn").onclick = () => {
   sessionStorage.clear();
-  window.location.href = 'index.html';
-});
+  window.location.href = "index.html";
+};
