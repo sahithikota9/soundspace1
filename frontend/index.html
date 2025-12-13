@@ -1,55 +1,47 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>Music Progress Tracker — Login</title>
-  <link href="css/style.css" rel="stylesheet">
+<meta charset="utf-8">
+<title>MPT — Login</title>
+<link href="css/style.css" rel="stylesheet">
 </head>
 <body class="bg-pastel">
-  <main class="center-screen">
-    <div class="glass auth-card">
-      <h1>Music Progress Tracker</h1>
-      <p class="muted">Login with your 5-digit username & password</p>
-      <form id="loginForm">
-        <label>Username</label>
-        <input id="username" maxlength="5" required />
-        <label>Password</label>
-        <input id="password" maxlength="5" type="password" required />
-        <div class="row space-between">
-          <button class="btn primary" type="submit">Login</button>
-        </div>
-        <p id="err" class="muted" style="color:#b33"></p>
-      </form>
-    </div>
-  </main>
-
+<main class="center-screen">
+  <div class="glass auth-card">
+    <h1>Music Progress Tracker</h1>
+    <p class="muted">Login with your 5-digit username & password</p>
+    <form id="loginForm">
+      <label>Username</label>
+      <input id="username" maxlength="5" required>
+      <label>Password</label>
+      <input id="password" maxlength="5" type="password" required>
+      <div class="row space-between">
+        <button class="btn primary" type="submit">Login</button>
+      </div>
+      <p id="err" class="muted" style="color:#b33"></p>
+    </form>
+  </div>
+</main>
 <script>
-const API = "https://soundspace-5lgd.onrender.com"; // backend URL
+const API = "https://your-backend-url.onrender.com"; // replace with your deployed backend
 document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const u = document.getElementById('username').value.trim();
   const p = document.getElementById('password').value.trim();
-  try {
-    const res = await fetch(API + '/api/login', {
-      method: 'POST',
-      headers: {'content-type':'application/json'},
-      body: JSON.stringify({ username: u, password: p })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      document.getElementById('err').innerText = data.error || 'Login failed';
-      return;
-    }
-    // store token + user
-    sessionStorage.setItem('mpt_token', data.token);
-    sessionStorage.setItem('mpt_username', data.username);
-    sessionStorage.setItem('mpt_role', data.role);
-    sessionStorage.setItem('mpt_name', data.name);
-    window.location.href = 'dashboard.html';
-  } catch(err) {
-    document.getElementById('err').innerText = 'Server error. Try again later.';
-    console.error(err);
+  const res = await fetch(API + '/api/login', {
+    method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({ username: u, password: p })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    document.getElementById('err').innerText = data.error || 'Login failed';
+    return;
   }
+  sessionStorage.setItem('mpt_token', data.token);
+  sessionStorage.setItem('mpt_username', data.username);
+  sessionStorage.setItem('mpt_role', data.role);
+  sessionStorage.setItem('mpt_name', data.name);
+  window.location.href = 'dashboard.html';
 });
 </script>
 </body>

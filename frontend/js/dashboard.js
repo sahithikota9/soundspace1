@@ -1,45 +1,46 @@
-const API = 'https://soundspace-5lgd.onrender.com'; // Replace with your backend URL
+const API = "https://your-backend-url.onrender.com"; // replace with your deployed backend
+const username = sessionStorage.getItem('mpt_username');
+const role = sessionStorage.getItem('mpt_role');
+const name = sessionStorage.getItem('mpt_name');
 
-document.addEventListener('DOMContentLoaded', () => {
-  const name = sessionStorage.getItem('mpt_name');
-  const role = sessionStorage.getItem('mpt_role');
-  const username = sessionStorage.getItem('mpt_username');
-  if (!name || !role) window.location.href = 'index.html';
+document.getElementById('welcomeName').innerText = `Welcome, ${name} (${role})`;
 
-  document.getElementById('userName').innerText = `Welcome, ${name}`;
-  document.getElementById('userRole').innerText = `Role: ${role}`;
+// Load tab content
+async function loadTab(tab) {
+  const content = document.getElementById('tabContent');
+  content.innerHTML = 'Loading...';
+  try {
+    let data;
+    if (['practice','errors','notes'].includes(tab)) {
+      const res = await fetch(`${API}/${tab}/${username}`);
+      data = await res.json();
+    } else if (tab === 'private') {
+      const res = await fetch(`${API}/private/${username}`);
+      data = await res.json();
+    } else if (tab === 'public') {
+      const res = await fetch(`${API}/public`);
+      data = await res.json();
+    } else if (tab === 'notifications') {
+      const res = await fetch(`${API}/notifications`);
+      data = await res.json();
+    }
+    content.innerHTML = JSON.stringify(data, null, 2); // replace with UI cards later
+  } catch(e) {
+    content.innerHTML = 'Error loading tab';
+    console.error(e);
+  }
+}
 
-  // Sidebar tabs
-  document.querySelectorAll('.tab-link').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.dataset.target;
-      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-      document.getElementById(target).style.display = 'block';
-    });
-  });
+// Sidebar tab clicks
+document.querySelectorAll('.sidebar-tab').forEach(el => {
+  el.addEventListener('click', () => loadTab(el.dataset.tab));
+});
 
-  // Load notifications
-  fetch(API + '/api/notifications')
-    .then(res => res.json())
-    .then(data => {
-      const container = document.getElementById('notificationsList');
-      container.innerHTML = '';
-      data.forEach(n => {
-        const div = document.createElement('div');
-        div.className = 'notification-card';
-        div.innerText = `${n.date}: ${n.message}`;
-        container.appendChild(div);
-      });
-    });
+// Load default tab
+loadTab(role === 'teacher' ? 'notifications' : 'practice');
 
-  // Load practice/errors/notes dynamically
-  ['practice', 'errors', 'notes'].forEach(type => {
-    fetch(`${API}/api/load/${type}/${username}`)
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById(type + 'Container');
-        if (!container) return;
-        container.value = JSON.stringify(data, null, 2); // example simple display
-      });
-  });
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.clear();
+  window.location.href = 'index.html';
 });

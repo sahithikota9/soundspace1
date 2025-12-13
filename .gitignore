@@ -1,9 +1,6 @@
 # Node modules (do not upload)
 node_modules/
 
-# Backend private JSON data
-backend/data/*.json
-
 # Per-user JSON folders (auto-generated)
 backend/data/practice/
 backend/data/notes/

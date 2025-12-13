@@ -1,76 +1,24 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Music Progress Tracker — Dashboard</title>
-  <link href="css/style.css" rel="stylesheet">
+<meta charset="utf-8">
+<title>MPT — Dashboard</title>
+<link href="css/style.css" rel="stylesheet">
 </head>
 <body class="bg-pastel">
-  <aside class="sidebar glass">
-    <h2>Welcome, <span id="usernameDisplay"></span></h2>
-    <p>Role: <span id="roleDisplay"></span></p>
-    <ul id="menu">
-      <!-- Menu items will populate via JS -->
-    </ul>
-    <button id="logoutBtn" class="btn secondary">Logout</button>
-  </aside>
-
-  <main class="dashboard-content glass">
-    <div id="tabContent">Select a tab</div>
-  </main>
-
-<script>
-const API = "https://soundspace-5lgd.onrender.com"; // backend URL
-
-const username = sessionStorage.getItem('mpt_username');
-const role = sessionStorage.getItem('mpt_role');
-const name = sessionStorage.getItem('mpt_name');
-
-if (!username) window.location.href = 'index.html';
-
-document.getElementById('usernameDisplay').innerText = name;
-document.getElementById('roleDisplay').innerText = role;
-
-const menu = document.getElementById('menu');
-let tabs = [];
-if (role === 'student') {
-  tabs = ['Practice','Errors','Notes','Music Library','Notifications','Profile'];
-} else if (role === 'teacher') {
-  tabs = ['Notifications','Music Library','Profile'];
-}
-
-tabs.forEach(tab => {
-  const li = document.createElement('li');
-  li.innerText = tab;
-  li.addEventListener('click', ()=>loadTab(tab));
-  menu.appendChild(li);
-});
-
-// Logout
-document.getElementById('logoutBtn').addEventListener('click', ()=>{
-  sessionStorage.clear();
-  location.href='index.html';
-});
-
-// Tab content loader
-async function loadTab(tab){
-  const content = document.getElementById('tabContent');
-  content.innerHTML = `<h3>${tab}</h3><p>Loading...</p>`;
-  // Add your fetch logic for each tab here (practice, errors, notes, libraries, notifications)
-  // Example for Notifications:
-  if(tab==='Notifications'){
-    const res = await fetch(API+'/api/notifications');
-    const data = await res.json();
-    content.innerHTML = '';
-    for(const key in data){
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerText = `[${new Date(parseInt(key)).toLocaleDateString()}] ${data[key].username}: ${data[key].message}`;
-      content.appendChild(div);
-    }
-  }
-  // Similarly implement Practice, Errors, Notes, Music Library, Profile
-}
-</script>
+<div class="sidebar">
+  <div id="welcomeName"></div>
+  <button class="sidebar-tab" data-tab="practice">Practice</button>
+  <button class="sidebar-tab" data-tab="errors">Errors</button>
+  <button class="sidebar-tab" data-tab="notes">Notes</button>
+  <button class="sidebar-tab" data-tab="public">Public Library</button>
+  <button class="sidebar-tab" data-tab="private">Private Library</button>
+  <button class="sidebar-tab" data-tab="notifications">Notifications</button>
+  <button id="logoutBtn">Logout</button>
+</div>
+<div id="tabContent" class="main-content">
+  Loading...
+</div>
+<script src="js/dashboard.js"></script>
 </body>
 </html>
