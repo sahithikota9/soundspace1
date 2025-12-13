@@ -2,81 +2,80 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Music Progress Tracker — Dashboard</title>
+  <title>MPT — Dashboard</title>
   <link href="css/style.css" rel="stylesheet">
 </head>
 <body class="bg-pastel">
-
-<div class="dashboard-container">
-
-  <!-- Sidebar -->
-  <aside class="sidebar glass">
-    <h2 id="userName">Welcome, User</h2>
-    <p id="userRole">Role: </p>
-    <nav>
-      <ul>
-        <li class="tab-link" data-target="practiceTab">Practice</li>
-        <li class="tab-link" data-target="errorsTab">Errors</li>
-        <li class="tab-link" data-target="notesTab">Notes</li>
-        <li class="tab-link" data-target="libraryTab">Music Library</li>
-        <li class="tab-link" data-target="notificationsTab">Notifications</li>
-        <li class="tab-link" data-target="profileTab">Profile</li>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h2 id="welcomeMsg">Welcome!</h2>
+      <ul class="nav">
+        <li data-tab="practice">Practice</li>
+        <li data-tab="errors">Errors</li>
+        <li data-tab="notes">Notes</li>
+        <li data-tab="library">Music Library</li>
+        <li data-tab="notifications">Notifications</li>
+        <li data-tab="profile">Profile</li>
       </ul>
-    </nav>
-    <button id="logoutBtn" class="btn primary">Logout</button>
-  </aside>
+      <button id="logoutBtn" class="btn secondary">Logout</button>
+    </aside>
+    <main class="main-content">
+      <div id="practice" class="tab-content">Practice tab content...</div>
+      <div id="errors" class="tab-content">Errors tab content...</div>
+      <div id="notes" class="tab-content">Notes tab content...</div>
+      <div id="library" class="tab-content">Library tab content...</div>
+      <div id="notifications" class="tab-content">Notifications tab content...</div>
+      <div id="profile" class="tab-content">Profile tab content...</div>
+    </main>
+  </div>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Practice Tab -->
-    <section id="practiceTab" class="tab-content">
-      <h3>Practice</h3>
-      <textarea id="practiceContainer" placeholder="Enter your daily practice data"></textarea>
-    </section>
-
-    <!-- Errors Tab -->
-    <section id="errorsTab" class="tab-content" style="display:none;">
-      <h3>Errors</h3>
-      <textarea id="errorsContainer" placeholder="Enter your errors"></textarea>
-    </section>
-
-    <!-- Notes Tab -->
-    <section id="notesTab" class="tab-content" style="display:none;">
-      <h3>Notes</h3>
-      <textarea id="notesContainer" placeholder="Enter your notes"></textarea>
-    </section>
-
-    <!-- Library Tab -->
-    <section id="libraryTab" class="tab-content" style="display:none;">
-      <h3>Music Library</h3>
-      <div id="publicLibraryContainer"></div>
-      <div id="privateLibraryContainer"></div>
-    </section>
-
-    <!-- Notifications Tab -->
-    <section id="notificationsTab" class="tab-content" style="display:none;">
-      <h3>Notifications</h3>
-      <div id="notificationsList"></div>
-    </section>
-
-    <!-- Profile Tab -->
-    <section id="profileTab" class="tab-content" style="display:none;">
-      <h3>Profile</h3>
-      <p>Change password (demo)</p>
-      <input id="newPassword" type="password" placeholder="New password" maxlength="5">
-      <button id="changePassBtn" class="btn primary">Change Password</button>
-    </section>
-  </main>
-
-</div>
-
-<script src="js/dashboard.js"></script>
 <script>
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  sessionStorage.clear();
-  window.location.href = 'index.html';
-});
-</script>
+  // Redirect to login if not logged in
+  const username = sessionStorage.getItem('mpt_username');
+  const role = sessionStorage.getItem('mpt_role');
+  const name = sessionStorage.getItem('mpt_name');
 
+  if (!username || !role) {
+    window.location.href = 'index.html';
+  } else {
+    document.getElementById('welcomeMsg').innerText = `Welcome, ${name}`;
+  }
+
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  });
+
+  // Tab switching
+  const tabs = document.querySelectorAll('.sidebar .nav li');
+  const contents = document.querySelectorAll('.tab-content');
+
+  function hideAll() {
+    contents.forEach(c => c.style.display = 'none');
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      hideAll();
+      const target = tab.getAttribute('data-tab');
+      document.getElementById(target).style.display = 'block';
+    });
+  });
+
+  // Show default tab based on role
+  if (role === 'teacher') {
+    hideAll();
+    document.getElementById('notifications').style.display = 'block';
+    // Hide student-only tabs
+    ['practice','errors','notes'].forEach(id => {
+      const el = document.querySelector(`[data-tab="${id}"]`);
+      if (el) el.style.display = 'none';
+    });
+  } else {
+    hideAll();
+    document.getElementById('practice').style.display = 'block';
+  }
+</script>
 </body>
 </html>
